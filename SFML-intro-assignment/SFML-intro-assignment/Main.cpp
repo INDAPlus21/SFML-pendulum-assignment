@@ -11,15 +11,12 @@ int main() {
 	std::cout << "Hewwo\n";
 
 	//Create the window
-	sf::RenderWindow window(sf::VideoMode(800, 800), "Double pendulum simulation", sf::Style::Default);
-	//Since this is a simulation, we want to keep the framerate stable
+	sf::RenderWindow window(sf::VideoMode(800, 800), "Your first SFML program!", sf::Style::Default);
 	window.setFramerateLimit(60);
-	//The angles must be in radians. If you do not know what radians are, please ask Gustav
-	const float MATH_PI = 3.14159265358979323846f;
 
-	//Modify these values and see what happens!
+
 	PendulumInformation pi;
-	pi.angle1 = MATH_PI /2.f;
+	pi.angle1 = 3.14159265358979323846 / 2;
 	pi.angle1P = 0;
 	pi.angle2 = 0;
 	pi.angle2P = 0;
@@ -30,7 +27,6 @@ int main() {
 	pi.mass2 = 10;
 	pi.pos1 = pi.length1 * sf::Vector2f(sin(pi.angle1), -cos(pi.angle1));
 	pi.pos2 = pi.pos1 + pi.length2 * sf::Vector2f(sin(pi.angle2), -cos(pi.angle2));
-
 
 	//Update loop
 	while (window.isOpen()) {

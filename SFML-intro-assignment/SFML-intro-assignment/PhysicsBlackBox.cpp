@@ -4,6 +4,22 @@
 
 //You should not need to alter this code, talk to me if there are any problems
 
+PendulumInformationDerivative Step(PendulumInformation& pi, PendulumInformationDerivative& k1, float h) {
+	k1.angle1P = pi.angle1P;
+	k1.angle2P = pi.angle2P;
+
+	k1.angle1PP = (-pi.gravity * (2 * pi.mass1 + pi.mass2) * sin(pi.angle1) - pi.mass2 * pi.gravity * sin(pi.angle1 - 2 * pi.angle2) - 2 * sin(pi.angle1 - pi.angle2) * pi.mass2 * (pi.angle2P * pi.angle2P * pi.length2 + pi.angle1P * pi.angle1P * pi.length1 * cos(pi.angle1 - pi.angle2))) /
+		(pi.length1 * 2 * pi.mass1 + pi.mass2 - pi.mass2 * cos(2 * pi.angle1 - 2 * pi.angle2));
+	k1.angle2PP = (2 * sin(pi.angle1 - pi.angle2) * (pi.angle1P * pi.angle1P * pi.length1 * (pi.mass1 + pi.mass2) + pi.gravity * (pi.mass1 + pi.mass2) * cos(pi.angle1) + pi.angle2P * pi.angle2P * pi.length2 * pi.mass2 * cos(pi.angle1 - pi.angle2))) /
+		(pi.length2 * (2 * pi.mass1 + pi.mass2 - pi.mass2 * cos(2 * pi.angle1 - 2 * pi.angle2)));
+
+	k1.pos1P = sf::Vector2f(pi.angle1P * pi.length1 * cos(pi.angle1), pi.angle1P * pi.length1 * sin(pi.angle1));
+	k1.pos2P = sf::Vector2f(pi.angle1P * pi.length1 * cos(pi.angle1) + pi.angle2P * pi.length2 * cos(pi.angle2),
+		pi.angle1P * pi.length1 * sin(pi.angle1) + pi.angle2P * pi.length2 * sin(pi.angle2));
+
+	return k1;
+}
+
 void Next(PendulumInformation& pi, const float time) {
 	const int n = 10;
 	float h = time / n;
@@ -21,9 +37,9 @@ void Next(PendulumInformation& pi, const float time) {
 		tempK2.angle1P += k1.angle1PP * h / 2.f;
 		tempK2.angle2P += k1.angle2PP * h / 2.f;
 
-		tempK2.pos1 += k1.pos1P * h / 2.f;
-		tempK2.pos2 += k1.pos2P * h / 2.f;
-		PendulumInformationDerivative k2 = Step(tempK2, k1, h);
+		tempK2.pos1 = tempK2.length1 * sf::Vector2f(sin(tempK2.angle1), -cos(tempK2.angle1));
+		tempK2.pos2 = tempK2.pos1 + tempK2.length2 * sf::Vector2f(sin(tempK2.angle2), -cos(tempK2.angle2));
+		PendulumInformationDerivative k2 = Step(tempK2, k2, h);
 
 		//k3 calculation
 		PendulumInformation tempK3 = pi;
@@ -32,9 +48,9 @@ void Next(PendulumInformation& pi, const float time) {
 		tempK3.angle1P += k2.angle1PP * h / 2.f;
 		tempK3.angle2P += k2.angle2PP * h / 2.f;
 
-		tempK3.pos1 += k2.pos1P * h / 2.f;
-		tempK3.pos2 += k2.pos2P * h / 2.f;
-		PendulumInformationDerivative k3 = Step(tempK3, k1, h);
+		tempK3.pos1 = tempK3.length1 * sf::Vector2f(sin(tempK3.angle1), -cos(tempK3.angle1));
+		tempK3.pos2 = tempK3.pos1 + tempK3.length2 * sf::Vector2f(sin(tempK3.angle2), -cos(tempK3.angle2));
+		PendulumInformationDerivative k3 = Step(tempK3, k3, h);
 
 		//k4 calculation
 		PendulumInformation tempK4 = pi;
@@ -43,9 +59,9 @@ void Next(PendulumInformation& pi, const float time) {
 		tempK4.angle1P += k3.angle1PP * h;
 		tempK4.angle2P += k3.angle2PP * h;
 
-		tempK4.pos1 += k3.pos1P * h;
-		tempK4.pos2 += k3.pos2P * h;
-		PendulumInformationDerivative k4 = Step(pi, k1, h);
+		tempK4.pos1 = tempK4.length1 * sf::Vector2f(sin(tempK4.angle1), -cos(tempK4.angle1));
+		tempK4.pos2 = tempK4.pos1 + tempK4.length2 * sf::Vector2f(sin(tempK4.angle2), -cos(tempK4.angle2));
+		PendulumInformationDerivative k4 = Step(tempK4, k4, h);
 
 
 		//Actual calculation
@@ -63,18 +79,3 @@ void Next(PendulumInformation& pi, const float time) {
 
 }
 
-PendulumInformationDerivative Step(PendulumInformation& pi, PendulumInformationDerivative& k1, float h) {
-	k1.angle1P = pi.angle1P;
-	k1.angle2P = pi.angle2P;
-
-	k1.angle1PP = (-pi.gravity * (2 * pi.mass1 + pi.mass2) * sin(pi.angle1) - pi.mass2 * pi.gravity * sin(pi.angle1 - 2 * pi.angle2) - 2 * sin(pi.angle1 - pi.angle2) * pi.mass2 * (pi.angle2P * pi.angle2P * pi.length2 + pi.angle1P * pi.angle1P * pi.length1 * cos(pi.angle1 - pi.angle2))) /
-		(pi.length1 * 2 * pi.mass1 + pi.mass2 - pi.mass2 * cos(2 * pi.angle1 - 2 * pi.angle2));
-	k1.angle2PP = (2 * sin(pi.angle1 - pi.angle2) * (pi.angle1P * pi.angle1P * pi.length1 * (pi.mass1 + pi.mass2) + pi.gravity * (pi.mass1 + pi.mass2) * cos(pi.angle1) + pi.angle2P * pi.angle2P * pi.length2 * pi.mass2 * cos(pi.angle1 - pi.angle2))) /
-		(pi.length2 * (2 * pi.mass1 + pi.mass2 - pi.mass2 * cos(2 * pi.angle1 - 2 * pi.angle2)));
-
-	k1.pos1P = sf::Vector2f(pi.angle1P * pi.length1 * cos(pi.angle1), pi.angle1P * pi.length1 * sin(pi.angle1));
-	k1.pos2P = sf::Vector2f(pi.angle1P * pi.length1 * cos(pi.angle1) + pi.angle2P * pi.length2 * cos(pi.angle2), 
-							pi.angle1P * pi.length1 * sin(pi.angle1) + pi.angle2P * pi.length2 * sin(pi.angle2));
-
-	return k1;
-}
